@@ -35,6 +35,9 @@
             "./migrations/.gitignore"
         ]
     },
+    "kevinpapst/tabler-bundle": {
+        "version": "1.9.0"
+    },
     "phpunit/phpunit": {
         "version": "11.5",
         "recipe": {
