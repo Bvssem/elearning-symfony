@@ -4,29 +4,12 @@
 
 {% block tabler_navbar_title %}My E-learning Platform{% endblock %}
 
-{# Sidebar branding and links (optional customization) #}
 {% block tabler_sidebar_brand %}
     <span class="sidebar-brand">Admin</span>
 {% endblock %}
 
-{# Main content area (this replaces your old "body" block) #}
 {% block tabler_main %}
-    {% block body %}
-        <div class="container py-4">
-            {% block content %}{% endblock %}
-        </div>
-    {% endblock %}
-{% endblock %}
-
-{# Optionally include any extra CSS or JS if needed #}
-{% block tabler_css %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('bundles/tabler/tabler.css') }}">
-    {% block stylesheets %}{% endblock %}
-{% endblock %}
-
-
-{% block tabler_js %}
-    {{ parent() }}
-    {% block javascripts %}{% endblock %}
+    <div class="container py-4">
+        {% block content %}{% endblock %}
+    </div>
 {% endblock %}

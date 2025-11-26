@@ -13,17 +13,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/category')]
 final class CategoryController extends AbstractController
 {
-    #[Route(name: 'app_category_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
-        $categories = $entityManager
-            ->getRepository(Category::class)
-            ->findAll();
+    #[Route('/', name: 'app_course_index', methods: ['GET'])]
+public function index(CourseRepository $courseRepository): Response
+{
+    $courses = $courseRepository->findBy([], ['createdAt' => 'DESC']);
 
-        return $this->render('category/index.html.twig', [
-            'categories' => $categories,
-        ]);
-    }
+    return $this->render('course/index.html.twig', [
+        'courses' => $courses,
+    ]);
+}
 
     #[Route('/new', name: 'app_category_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
