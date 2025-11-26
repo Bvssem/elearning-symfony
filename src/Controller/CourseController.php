@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/course')]
 final class CourseController extends AbstractController
 {
-   #[Route('/', name: 'app_course_index', methods: ['GET'])]
+#[Route('/', name: 'app_course_index', methods: ['GET'])]
 public function index(CourseRepository $courseRepository): Response
 {
     $courses = $courseRepository->findBy([], ['createdAt' => 'DESC']);
@@ -23,6 +23,7 @@ public function index(CourseRepository $courseRepository): Response
         'courses' => $courses,
     ]);
 }
+
 
 
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
@@ -45,7 +46,7 @@ public function index(CourseRepository $courseRepository): Response
         ]);
     }
 
-   #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
+ #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
 public function show(Course $course): Response
 {
     return $this->render('course/show.html.twig', [

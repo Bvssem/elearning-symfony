@@ -1,4 +1,58 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="mb-3">
+        {{ form_label(form.title, 'Course Title', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.title) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.slug, 'Slug', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.slug, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.slug) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.shortDescription, 'Short Description', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.shortDescription, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+        {{ form_errors(form.shortDescription) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.fullDescription, 'Full Description', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.fullDescription, {'attr': {'class': 'form-control', 'rows': '6'}}) }}
+        {{ form_errors(form.fullDescription) }}
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.price, 'Price', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.price) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.isPublished, 'Published', {'label_attr': {'class': 'form-check-label'}}) }}
+                {{ form_widget(form.isPublished, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_errors(form.isPublished) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.imageFilename, 'Image Filename', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.imageFilename, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.imageFilename) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.category) }}
+    </div>
+
+    <button class="btn btn-primary" type="submit">{{ button_label|default('Save') }}</button>
+    <a href="{{ path('app_course_index') }}" class="btn btn-secondary">Cancel</a>
+
 {{ form_end(form) }}
