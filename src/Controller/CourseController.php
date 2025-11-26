@@ -47,12 +47,22 @@ public function index(CourseRepository $courseRepository): Response
     }
 
  #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
-public function show(Course $course): Response
-{
+public function show(
+    Course $course,
+    EnrollmentRepository $enrollmentRepository
+): Response {
+    $isEnrolled = false;
+    
+    if ($this->getUser()) {
+        $isEnrolled = $enrollmentRepository->isEnrolled($this->getUser(), $course);
+    }
+
     return $this->render('course/show.html.twig', [
         'course' => $course,
+        'is_enrolled' => $isEnrolled,
     ]);
 }
+
 
     #[Route('/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Course $course, EntityManagerInterface $entityManager): Response

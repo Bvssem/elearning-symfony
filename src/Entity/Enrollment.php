@@ -6,6 +6,9 @@ use App\Repository\EnrollmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EnrollmentRepository::class)]
+#[ORM\Table(name: 'enrollment', uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'unique_user_course', columns: ['user_id', 'course_id'])
+])]
 class Enrollment
 {
     #[ORM\Id]
@@ -13,27 +16,23 @@ class Enrollment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 20)]
-    private ?string $status = null; // PENDING, PAID, CANCELLED
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $paidAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'enrollments')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $student = null;
+    private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'enrollments')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Course $course = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $enrolledAt = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $status = 'active';
+
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'PENDING';
+        $this->enrolledAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -41,51 +40,14 @@ class Enrollment
         return $this->id;
     }
 
-    public function getStatus(): ?string
+    public function getUser(): ?User
     {
-        return $this->status;
+        return $this->user;
     }
 
-    public function setStatus(string $status): self
+    public function setUser(?User $user): static
     {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getPaidAt(): ?\DateTimeImmutable
-    {
-        return $this->paidAt;
-    }
-
-    public function setPaidAt(?\DateTimeImmutable $paidAt): self
-    {
-        $this->paidAt = $paidAt;
-
-        return $this;
-    }
-
-    public function getStudent(): ?User
-    {
-        return $this->student;
-    }
-
-    public function setStudent(?User $student): self
-    {
-        $this->student = $student;
-
+        $this->user = $user;
         return $this;
     }
 
@@ -94,10 +56,31 @@ class Enrollment
         return $this->course;
     }
 
-    public function setCourse(?Course $course): self
+    public function setCourse(?Course $course): static
     {
         $this->course = $course;
+        return $this;
+    }
 
+    public function getEnrolledAt(): ?\DateTimeImmutable
+    {
+        return $this->enrolledAt;
+    }
+
+    public function setEnrolledAt(\DateTimeImmutable $enrolledAt): static
+    {
+        $this->enrolledAt = $enrolledAt;
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
         return $this;
     }
 }

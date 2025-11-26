@@ -40,7 +40,7 @@
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h4>Course Details</h4>
-                                <dl class="row">
+                                                                <dl class="row">
                                     <dt class="col-sm-6">Price:</dt>
                                     <dd class="col-sm-6">
                                         {% if course.price > 0 %}
@@ -60,8 +60,21 @@
                                     <dt class="col-sm-6">Created:</dt>
                                     <dd class="col-sm-6">{{ course.createdAt|date('M d, Y') }}</dd>
                                 </dl>
-                                <button class="btn btn-primary w-100 mb-2">Enroll Now</button>
+                                {% if app.user %}
+                                    {% if is_enrolled %}
+                                        <form method="post" action="{{ path('app_enrollment_unenroll', {'id': course.id}) }}" style="display:inline-block; width: 100%;">
+                                            <button type="submit" class="btn btn-warning w-100 mb-2" onclick="return confirm('Unenroll from this course?')">Unenroll</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" style="display:inline-block; width: 100%;">
+                                            <button type="submit" class="btn btn-primary w-100 mb-2">Enroll Now</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{{ path('app_login') }}" class="btn btn-primary w-100 mb-2">Login to Enroll</a>
+                                {% endif %}
                                 <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-secondary w-100">Edit</a>
+
                             </div>
                         </div>
                     </div>
