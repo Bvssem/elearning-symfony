@@ -21,8 +21,10 @@
 {# Optionally include any extra CSS or JS if needed #}
 {% block tabler_css %}
     {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/tabler/tabler.css') }}">
     {% block stylesheets %}{% endblock %}
 {% endblock %}
+
 
 {% block tabler_js %}
     {{ parent() }}
