@@ -14,13 +14,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/course')]
 final class CourseController extends AbstractController
 {
-    #[Route(name: 'app_course_index', methods: ['GET'])]
-    public function index(CourseRepository $courseRepository): Response
-    {
-        return $this->render('course/index.html.twig', [
-            'courses' => $courseRepository->findAll(),
-        ]);
-    }
+   #[Route('/', name: 'app_course_index', methods: ['GET'])]
+public function index(CourseRepository $courseRepository): Response
+{
+    $courses = $courseRepository->findBy([], ['createdAt' => 'DESC']);
+
+    return $this->render('course/index.html.twig', [
+        'courses' => $courses,
+    ]);
+}
+
 
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -42,13 +45,13 @@ final class CourseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
-    public function show(Course $course): Response
-    {
-        return $this->render('course/show.html.twig', [
-            'course' => $course,
-        ]);
-    }
+   #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
+public function show(Course $course): Response
+{
+    return $this->render('course/show.html.twig', [
+        'course' => $course,
+    ]);
+}
 
     #[Route('/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Course $course, EntityManagerInterface $entityManager): Response
