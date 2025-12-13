@@ -1,85 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ course.title }}{% endblock %}
+{% block title %}Course: {{ course.title }}{% endblock %}
 
-{% block content %}
-    <div class="page-wrapper">
-        <div class="container-xl">
-            <div class="page-header d-print-none">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">{{ course.title }}</h2>
-                    </div>
-                    <div class="col-auto">
-                        <a href="{{ path('app_course_index') }}" class="btn btn-secondary">
-                            Back to Courses
-                        </a>
-                    </div>
+{% block body %}
+<div class="row row-cards">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ course.title }}</h3>
+            </div>
+            <div class="card-body">
+                {# Note: If 'description' gives an error, try 'fullDescription' or 'shortDescription' depending on your Entity #}
+                <p>{{ course.description }}</p>
+                
+                <div class="mt-3">
+                    <span class="badge bg-blue">{{ course.price }} DT</span>
+                    {% if course.category is defined and course.category %}
+                        <span class="badge bg-green">{{ course.category.name }}</span>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="page-body">
-            <div class="container-xl">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card mb-3">
-                            {% if course.imageFilename %}
-                                <img src="{{ asset('images/courses/' ~ course.imageFilename) }}" alt="{{ course.title }}" class="card-img-top" style="height: 400px; object-fit: cover;">
-                            {% else %}
-                                <div style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">
-                                    No image available
-                                </div>
-                            {% endif %}
-                            <div class="card-body">
-                                <h3>Description</h3>
-                                <p>{{ course.fullDescription }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h4>Course Details</h4>
-                                                                <dl class="row">
-                                    <dt class="col-sm-6">Price:</dt>
-                                    <dd class="col-sm-6">
-                                        {% if course.price > 0 %}
-                                            <strong>${{ course.price }}</strong>
-                                        {% else %}
-                                            <strong class="text-success">Free</strong>
-                                        {% endif %}
-                                    </dd>
-                                    <dt class="col-sm-6">Status:</dt>
-                                    <dd class="col-sm-6">
-                                        {% if course.isPublished %}
-                                            <span class="badge bg-success">Published</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Draft</span>
-                                        {% endif %}
-                                    </dd>
-                                    <dt class="col-sm-6">Created:</dt>
-                                    <dd class="col-sm-6">{{ course.createdAt|date('M d, Y') }}</dd>
-                                </dl>
-                                {% if app.user %}
-                                    {% if is_enrolled %}
-                                        <form method="post" action="{{ path('app_enrollment_unenroll', {'id': course.id}) }}" style="display:inline-block; width: 100%;">
-                                            <button type="submit" class="btn btn-warning w-100 mb-2" onclick="return confirm('Unenroll from this course?')">Unenroll</button>
-                                        </form>
-                                    {% else %}
-                                        <form method="post" action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" style="display:inline-block; width: 100%;">
-                                            <button type="submit" class="btn btn-primary w-100 mb-2">Enroll Now</button>
-                                        </form>
-                                    {% endif %}
-                                {% else %}
-                                    <a href="{{ path('app_login') }}" class="btn btn-primary w-100 mb-2">Login to Enroll</a>
-                                {% endif %}
-                                <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-secondary w-100">Edit</a>
+            
+            <div class="card-footer d-flex align-items-center">
+                <a href="{{ path('app_course_index') }}" class="btn btn-secondary me-2">Back to list</a>
 
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {# START: Enrollment Logic #}
+                {% if app.user %}
+                    {# The form submits to the Enroll Controller we just created #}
+                    <form action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-success">
+                            Enroll Now
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-primary">
+                        Login to Enroll
+                    </a>
+                {% endif %}
+                {# END: Enrollment Logic #}
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

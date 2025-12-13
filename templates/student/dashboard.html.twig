@@ -1,77 +1,43 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}My Courses{% endblock %}
+{% block title %}My Learning Dashboard{% endblock %}
 
 {% block content %}
-    <div class="page-wrapper">
-        <div class="container-xl">
-            <div class="page-header d-print-none">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">
-                            My Enrolled Courses
-                        </h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="page-body">
-            <div class="container-xl">
-                {% if enrollments is empty %}
-                    <div class="alert alert-info" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                You are not enrolled in any courses yet.
-                                <a href="{{ path('app_course_index') }}">Browse courses</a>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="row row-deck row-cards">
-                        {% for enrollment in enrollments %}
-                            {% set course = enrollment.course %}
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card">
-                                    {% if course.imageFilename %}
-                                        <img src="{{ asset('images/courses/' ~ course.imageFilename) }}" alt="{{ course.title }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                    {% else %}
-                                        <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
-                                            No image
-                                        </div>
-                                    {% endif %}
-                                    <div class="card-body">
-                                        <h3 class="card-title">
-                                            <a href="{{ path('app_course_show', {'id': course.id}) }}" class="text-reset">
-                                                {{ course.title }}
-                                            </a>
-                                        </h3>
-                                        <p class="text-muted text-truncate">
-                                            {{ course.shortDescription }}
-                                        </p>
-                                        <div class="mb-2">
-                                            <small class="text-muted">
-                                                Enrolled: {{ enrollment.enrolledAt|date('M d, Y') }}
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="badge bg-info">{{ enrollment.status }}</span>
-                                            </div>
-                                            <div class="btn-list flex-nowrap">
-                                                <a href="{{ path('app_course_show', {'id': course.id}) }}" class="btn btn-sm btn-ghost-primary">
-                                                    View
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+<div class="page-wrapper">
+    <div class="container-xl">
+        <div class="page-header d-print-none">
+            <h2 class="page-title">My Enrolled Courses</h2>
         </div>
     </div>
+    <div class="page-body">
+        <div class="container-xl">
+            {% if enrollments is empty %}
+                <div class="empty">
+                    <p class="empty-title">You haven't enrolled in any courses yet.</p>
+                    <div class="empty-action">
+                        <a href="{{ path('app_course_index') }}" class="btn btn-primary">Browse Courses</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row row-cards">
+                    {% for enrollment in enrollments %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{ enrollment.course.title }}</h3>
+                                    <p class="text-muted">
+                                        Enrolled on: {{ enrollment.enrolledAt|date('M d, Y') }}
+                                    </p>
+                                    <a href="{{ path('app_course_show', {id: enrollment.course.id}) }}" class="btn btn-outline-primary w-100">
+                                        Continue Learning
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -6,9 +6,7 @@ use App\Repository\EnrollmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EnrollmentRepository::class)]
-#[ORM\Table(name: 'enrollment', uniqueConstraints: [
-    new ORM\UniqueConstraint(name: 'unique_user_course', columns: ['user_id', 'course_id'])
-])]
+#[ORM\UniqueConstraint(name: 'unique_enrollment', columns: ['student_id', 'course_id'])]
 class Enrollment
 {
     #[ORM\Id]
@@ -16,38 +14,31 @@ class Enrollment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'enrollments')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private ?User $student = null;  // <--- This was likely missing or named wrong
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'enrollments')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Course $course = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $enrolledAt = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $status = 'active';
-
-    public function __construct()
-    {
-        $this->enrolledAt = new \DateTimeImmutable();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getStudent(): ?User
     {
-        return $this->user;
+        return $this->student;
     }
 
-    public function setUser(?User $user): static
+    public function setStudent(?User $student): self
     {
-        $this->user = $user;
+        $this->student = $student;
+
         return $this;
     }
 
@@ -56,9 +47,10 @@ class Enrollment
         return $this->course;
     }
 
-    public function setCourse(?Course $course): static
+    public function setCourse(?Course $course): self
     {
         $this->course = $course;
+
         return $this;
     }
 
@@ -67,20 +59,10 @@ class Enrollment
         return $this->enrolledAt;
     }
 
-    public function setEnrolledAt(\DateTimeImmutable $enrolledAt): static
+    public function setEnrolledAt(\DateTimeImmutable $enrolledAt): self
     {
         $this->enrolledAt = $enrolledAt;
-        return $this;
-    }
 
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
         return $this;
     }
 }

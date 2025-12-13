@@ -2,65 +2,36 @@
 
 namespace App\Controller;
 
-use App\Entity\Enrollment;
 use App\Entity\Course;
-use App\Repository\EnrollmentRepository;
+use App\Entity\Enrollment;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
-#[Route('/enrollment', name: 'app_enrollment_')]
 class EnrollmentController extends AbstractController
 {
-    #[Route('/enroll/{id}', name: 'enroll', methods: ['POST'])]
-    public function enroll(
-        Course $course,
-        EnrollmentRepository $enrollmentRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
+    #[Route('/enroll/{id}', name: 'app_enrollment_enroll', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function enroll(Course $course, EntityManagerInterface $entityManager): Response
+    {
+        // 1. Check if user is already enrolled (simple check)
         $user = $this->getUser();
+        // You might want to add a check here later to prevent double enrollment
 
-        // Check if already enrolled
-        if ($enrollmentRepository->isEnrolled($user, $course)) {
-            $this->addFlash('warning', 'You are already enrolled in this course.');
-            return $this->redirectToRoute('app_course_show', ['id' => $course->getId()]);
-        }
-
-        // Create enrollment
+        // 2. Create new Enrollment
         $enrollment = new Enrollment();
-        $enrollment->setUser($user);
         $enrollment->setCourse($course);
-        $enrollment->setStatus('active');
-
+        $enrollment->setStudent($user);
+        $enrollment->setEnrolledAt(new \DateTimeImmutable());
+        
+        // 3. Save to database
         $entityManager->persist($enrollment);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Successfully enrolled in ' . $course->getTitle());
-        return $this->redirectToRoute('app_course_show', ['id' => $course->getId()]);
-    }
+        $this->addFlash('success', 'You have successfully enrolled in ' . $course->getTitle());
 
-    #[Route('/unenroll/{id}', name: 'unenroll', methods: ['POST'])]
-    public function unenroll(
-        Course $course,
-        EnrollmentRepository $enrollmentRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $user = $this->getUser();
-
-        $enrollment = $enrollmentRepository->findByUserAndCourse($user, $course);
-
-        if (!$enrollment) {
-            $this->addFlash('danger', 'You are not enrolled in this course.');
-            return $this->redirectToRoute('app_course_show', ['id' => $course->getId()]);
-        }
-
-        $entityManager->remove($enrollment);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Successfully unenrolled from ' . $course->getTitle());
-        return $this->redirectToRoute('app_course_show', ['id' => $course->getId()]);
+        return $this->redirectToRoute('app_student_dashboard');
     }
 }

@@ -1,29 +1,25 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Home - E-Learning Platform{% endblock %}
 
 {% block content %}
     <div class="page-wrapper">
         <div class="container-xl">
             <div class="page-header d-print-none">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">
-                            Welcome to E-Learning Platform
-                        </h2>
-                    </div>
+                <div class="col">
+                    <h1 class="page-title">Welcome to E-Learning Platform</h1>
                 </div>
             </div>
         </div>
         <div class="page-body">
             <div class="container-xl">
                 <div class="row row-cards">
-                    <div class="col-md-12">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h3 class="card-title">Getting Started</h3>
-                                <p>Welcome to your e-learning administration dashboard. From here you can manage courses, categories, and students.</p>
-                                <a href="{{ path('app_course_index') }}" class="btn btn-primary">View All Courses</a>
+                                <h2>Start Learning Today</h2>
+                                <p>Browse our courses and enroll to start your learning journey.</p>
+                                <a href="{{ path('app_course_index') }}" class="btn btn-primary">Browse Courses</a>
                             </div>
                         </div>
                     </div>

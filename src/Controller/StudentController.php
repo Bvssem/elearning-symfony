@@ -15,8 +15,8 @@ class StudentController extends AbstractController
     #[Route('/dashboard', name: 'dashboard')]
     public function dashboard(EnrollmentRepository $enrollmentRepository): Response
     {
-        $user = $this->getUser();
-        $enrollments = $enrollmentRepository->findByUser($user);
+        // Get all enrollments for the current logged-in user
+        $enrollments = $enrollmentRepository->findBy(['student' => $this->getUser()]);
 
         return $this->render('student/dashboard.html.twig', [
             'enrollments' => $enrollments,
