@@ -29,9 +29,23 @@
                                     <p class="text-muted">
                                         Enrolled on: {{ enrollment.enrolledAt|date('M d, Y') }}
                                     </p>
-                                    <a href="{{ path('app_course_show', {id: enrollment.course.id}) }}" class="btn btn-outline-primary w-100">
-                                        Continue Learning
-                                    </a>
+
+                                    {# --- NEW LOGIC: Link to the First Lesson --- #}
+                                    {% set firstLesson = enrollment.course.lessons|first %}
+                                    
+                                    {% if firstLesson %}
+                                        {# If the course has lessons, go to the player #}
+                                        <a href="{{ path('app_lesson_show', {id: firstLesson.id}) }}" class="btn btn-success w-100">
+                                            Start Lesson 1
+                                        </a>
+                                    {% else %}
+                                        {# If no lessons yet, just go to details #}
+                                        <a href="{{ path('app_course_show', {id: enrollment.course.id}) }}" class="btn btn-outline-primary w-100">
+                                            View Details
+                                        </a>
+                                    {% endif %}
+                                    {# ------------------------------------------ #}
+
                                 </div>
                             </div>
                         </div>

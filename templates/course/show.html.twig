@@ -10,34 +10,78 @@
                 <h3 class="card-title">{{ course.title }}</h3>
             </div>
             <div class="card-body">
-                {# Note: If 'description' gives an error, try 'fullDescription' or 'shortDescription' depending on your Entity #}
-                <p>{{ course.description }}</p>
+                <p>{{ course.fullDescription }}</p>
                 
-                <div class="mt-3">
+                <div class="mt-3 mb-4">
                     <span class="badge bg-blue">{{ course.price }} DT</span>
                     {% if course.category is defined and course.category %}
                         <span class="badge bg-green">{{ course.category.name }}</span>
                     {% endif %}
                 </div>
+
+                {# --- NEW SECTION: Lessons Management --- #}
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="card-title m-0">Course Content</h4>
+                    {# Only show 'Add Lesson' if user is logged in (Teacher logic) #}
+                    {% if app.user %} 
+                        <a href="{{ path('app_lesson_new', {course_id: course.id}) }}" class="btn btn-primary btn-sm">
+                            + Add New Lesson
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if course.lessons is empty %}
+                    <p class="text-muted">No lessons have been created yet.</p>
+                {% else %}
+                    <div class="list-group list-group-flush border-top">
+                        {% for lesson in course.lessons %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <span class="badge bg-secondary me-2">{{ lesson.number }}</span>
+                                    {{ lesson.title }}
+                                </span>
+                                <div>
+                                    {# Watch Button #}
+                                    <a href="{{ path('app_lesson_show', {id: lesson.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                        Watch
+                                    </a>
+                                    
+                                    {# Edit Button (For Teachers) #}
+                                    {% if app.user %}
+                                        <a href="{{ path('app_lesson_edit', {id: lesson.id}) }}" class="btn btn-sm btn-ghost-warning ms-1">
+                                            Edit
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {# --------------------------------------- #}
+
             </div>
             
             <div class="card-footer d-flex align-items-center">
                 <a href="{{ path('app_course_index') }}" class="btn btn-secondary me-2">Back to list</a>
 
-                {# START: Enrollment Logic #}
+                {# Enrollment Logic #}
                 {% if app.user %}
-                    {# The form submits to the Enroll Controller we just created #}
-                    <form action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-success">
-                            Enroll Now
-                        </button>
-                    </form>
+                     {% if is_enrolled is defined and is_enrolled %}
+                        <button class="btn btn-success disabled">Already Enrolled</button>
+                        <a href="{{ path('app_student_dashboard') }}" class="btn btn-outline-primary ms-2">Go to Dashboard</a>
+                     {% else %}
+                        <form action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-success">
+                                Enroll Now
+                            </button>
+                        </form>
+                     {% endif %}
                 {% else %}
                     <a href="{{ path('app_login') }}" class="btn btn-primary">
                         Login to Enroll
                     </a>
                 {% endif %}
-                {# END: Enrollment Logic #}
             </div>
         </div>
     </div>

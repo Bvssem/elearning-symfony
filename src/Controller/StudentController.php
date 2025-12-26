@@ -12,6 +12,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/student', name: 'app_student_')]
 class StudentController extends AbstractController
 {
+    // --- NEW: Redirect /student to /student/dashboard ---
+    #[Route('/', name: 'index')]
+    public function index(): Response
+    {
+        return $this->redirectToRoute('app_student_dashboard');
+    }
+    // ----------------------------------------------------
+
     #[Route('/dashboard', name: 'dashboard')]
     public function dashboard(EnrollmentRepository $enrollmentRepository): Response
     {

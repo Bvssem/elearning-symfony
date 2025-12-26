@@ -17,15 +17,17 @@ class EnrollmentRepository extends ServiceEntityRepository
 
     public function findByUserAndCourse(User $user, Course $course): ?Enrollment
     {
+        // FIX: Change 'user' to 'student'
         return $this->findOneBy([
-            'user' => $user,
+            'student' => $user,
             'course' => $course,
         ]);
     }
 
     public function findByUser(User $user): array
     {
-        return $this->findBy(['user' => $user], ['enrolledAt' => 'DESC']);
+        // FIX: Change 'user' to 'student'
+        return $this->findBy(['student' => $user], ['enrolledAt' => 'DESC']);
     }
 
     public function findByCourse(Course $course): array

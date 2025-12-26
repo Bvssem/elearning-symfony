@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -38,24 +40,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    public function isVerified(): bool
-    {
-        return $this->isVerified;
-    }
-
-    public function setIsVerified(bool $isVerified): self
-    {
-        $this->isVerified = $isVerified;
-
-        return $this;
-    }
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    // --- NEW: Track Completed Lessons ---
+    #[ORM\ManyToMany(targetEntity: Lesson::class)]
+    #[ORM\JoinTable(name: 'user_lesson_completion')]
+    private Collection $completedLessons;
+    // ------------------------------------
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->completedLessons = new ArrayCollection(); // <--- Initialize this!
     }
 
     public function getId(): ?int
@@ -71,7 +68,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -89,7 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-
+        // guarantee every user at least has ROLE_USER
         if (!in_array('ROLE_USER', $roles, true)) {
             $roles[] = 'ROLE_USER';
         }
@@ -100,7 +96,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
-
         return $this;
     }
 
@@ -112,13 +107,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
     public function eraseCredentials(): void
     {
-        // clear temporary data here if needed
+        // If you store any temporary, sensitive data on the user, clear it here
     }
 
     public function getFullName(): ?string
@@ -129,7 +123,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFullName(string $fullName): self
     {
         $this->fullName = $fullName;
-
         return $this;
     }
 
@@ -141,7 +134,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhone(string $phone): self
     {
         $this->phone = $phone;
-
         return $this;
     }
 
@@ -153,7 +145,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAvatarFilename(?string $avatarFilename): self
     {
         $this->avatarFilename = $avatarFilename;
+        return $this;
+    }
 
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
         return $this;
     }
 
@@ -165,6 +167,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    // --- NEW METHODS FOR PROGRESS TRACKING ---
+    /** @return Collection<int, Lesson> */
+    public function getCompletedLessons(): Collection
+    {
+        return $this->completedLessons;
+    }
+
+    public function addCompletedLesson(Lesson $lesson): self
+    {
+        if (!$this->completedLessons->contains($lesson)) {
+            $this->completedLessons->add($lesson);
+        }
+
+        return $this;
+    }
+
+    public function removeCompletedLesson(Lesson $lesson): self
+    {
+        $this->completedLessons->removeElement($lesson);
 
         return $this;
     }

@@ -11,27 +11,31 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\EnrollmentRepository;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/course')]
+#[IsGranted('ROLE_USER')] // Ensure only logged-in users can access these routes
 final class CourseController extends AbstractController
 {
-#[Route('/', name: 'app_course_index', methods: ['GET'])]
-public function index(CourseRepository $courseRepository): Response
-{
-    $courses = $courseRepository->findBy([], ['createdAt' => 'DESC']);
+    #[Route('/', name: 'app_course_index', methods: ['GET'])]
+    public function index(CourseRepository $courseRepository): Response
+    {
+        $courses = $courseRepository->findBy([], ['createdAt' => 'DESC']);
 
-    return $this->render('course/index.html.twig', [
-        'courses' => $courses,
-    ]);
-}
-
-
+        return $this->render('course/index.html.twig', [
+            'courses' => $courses,
+        ]);
+    }
 
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $course = new Course();
+        
+        // --- NEW: Automatically set the logged-in user as the teacher ---
+        $course->setTeacher($this->getUser());
+        // ----------------------------------------------------------------
+
         $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
 
@@ -48,27 +52,32 @@ public function index(CourseRepository $courseRepository): Response
         ]);
     }
 
- #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
-public function show(
-    Course $course,
-    EnrollmentRepository $enrollmentRepository
-): Response {
-    $isEnrolled = false;
-    
-    if ($this->getUser()) {
-        $isEnrolled = $enrollmentRepository->isEnrolled($this->getUser(), $course);
+    #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
+    public function show(
+        Course $course,
+        EnrollmentRepository $enrollmentRepository
+    ): Response {
+        $isEnrolled = false;
+        
+        if ($this->getUser()) {
+            $isEnrolled = $enrollmentRepository->isEnrolled($this->getUser(), $course);
+        }
+
+        return $this->render('course/show.html.twig', [
+            'course' => $course,
+            'is_enrolled' => $isEnrolled,
+        ]);
     }
-
-    return $this->render('course/show.html.twig', [
-        'course' => $course,
-        'is_enrolled' => $isEnrolled,
-    ]);
-}
-
 
     #[Route('/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
+        // --- SECURITY CHECK: Only the owner can edit ---
+        if ($course->getTeacher() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('You can only edit your own courses.');
+        }
+        // -----------------------------------------------
+
         $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
 
@@ -87,6 +96,12 @@ public function show(
     #[Route('/{id}', name: 'app_course_delete', methods: ['POST'])]
     public function delete(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
+        // --- SECURITY CHECK: Only the owner can delete ---
+        if ($course->getTeacher() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('You can only delete your own courses.');
+        }
+        // -------------------------------------------------
+
         if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($course);
             $entityManager->flush();

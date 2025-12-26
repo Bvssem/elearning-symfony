@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Lesson{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="container-xl my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New Lesson to: {{ course.title }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                            <div class="mb-3">
+                                {{ form_row(form.title) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(form.number) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(form.videoUrl) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(form.content) }}
+                            </div>
+                            <button class="btn btn-primary w-100">Save Lesson</button>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ path('app_course_show', {'id': course.id}) }}">Cancel and go back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
