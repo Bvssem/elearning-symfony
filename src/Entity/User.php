@@ -43,16 +43,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    // --- NEW: Track Completed Lessons ---
+    // --- TRACK COMPLETED LESSONS (Student) ---
     #[ORM\ManyToMany(targetEntity: Lesson::class)]
     #[ORM\JoinTable(name: 'user_lesson_completion')]
     private Collection $completedLessons;
-    // ------------------------------------
+
+    // --- NEW: TRACK COURSES TAUGHT (Teacher) ---
+    #[ORM\OneToMany(mappedBy: 'teacher', targetEntity: Course::class)]
+    private Collection $coursesTaught;
+    // -------------------------------------------
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->completedLessons = new ArrayCollection(); // <--- Initialize this!
+        $this->completedLessons = new ArrayCollection();
+        $this->coursesTaught = new ArrayCollection(); // <--- Initialize this!
     }
 
     public function getId(): ?int
@@ -76,7 +81,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    /** @deprecated use getUserIdentifier() instead */
     public function getUsername(): string
     {
         return (string) $this->email;
@@ -85,11 +89,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         if (!in_array('ROLE_USER', $roles, true)) {
             $roles[] = 'ROLE_USER';
         }
-
         return array_unique($roles);
     }
 
@@ -112,7 +114,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
     }
 
     public function getFullName(): ?string
@@ -170,8 +171,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // --- NEW METHODS FOR PROGRESS TRACKING ---
-    /** @return Collection<int, Lesson> */
     public function getCompletedLessons(): Collection
     {
         return $this->completedLessons;
@@ -182,14 +181,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->completedLessons->contains($lesson)) {
             $this->completedLessons->add($lesson);
         }
-
         return $this;
     }
 
     public function removeCompletedLesson(Lesson $lesson): self
     {
         $this->completedLessons->removeElement($lesson);
+        return $this;
+    }
 
+    // --- NEW GETTERS FOR TEACHER ---
+    /**
+     * @return Collection<int, Course>
+     */
+    public function getCoursesTaught(): Collection
+    {
+        return $this->coursesTaught;
+    }
+
+    public function addCoursesTaught(Course $course): self
+    {
+        if (!$this->coursesTaught->contains($course)) {
+            $this->coursesTaught->add($course);
+            $course->setTeacher($this);
+        }
+        return $this;
+    }
+
+    public function removeCoursesTaught(Course $course): self
+    {
+        if ($this->coursesTaught->removeElement($course)) {
+            if ($course->getTeacher() === $this) {
+                $course->setTeacher(null);
+            }
+        }
         return $this;
     }
 }

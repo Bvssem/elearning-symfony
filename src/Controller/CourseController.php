@@ -3,18 +3,20 @@
 namespace App\Controller;
 
 use App\Entity\Course;
+use App\Entity\Review;           // <--- ADDED
 use App\Form\CourseType;
+use App\Form\ReviewType;         // <--- ADDED
 use App\Repository\CourseRepository;
+use App\Repository\EnrollmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\EnrollmentRepository;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/course')]
-#[IsGranted('ROLE_USER')] // Ensure only logged-in users can access these routes
+#[IsGranted('ROLE_USER')]
 final class CourseController extends AbstractController
 {
     #[Route('/', name: 'app_course_index', methods: ['GET'])]
@@ -32,9 +34,8 @@ final class CourseController extends AbstractController
     {
         $course = new Course();
         
-        // --- NEW: Automatically set the logged-in user as the teacher ---
+        // Automatically set the logged-in user as the teacher
         $course->setTeacher($this->getUser());
-        // ----------------------------------------------------------------
 
         $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
@@ -52,31 +53,58 @@ final class CourseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_course_show', methods: ['GET', 'POST'])] // Changed to support POST for reviews
     public function show(
+        Request $request,               // <--- Added Request
         Course $course,
-        EnrollmentRepository $enrollmentRepository
+        EnrollmentRepository $enrollmentRepository,
+        EntityManagerInterface $entityManager // <--- Added EntityManager
     ): Response {
+        $user = $this->getUser();
         $isEnrolled = false;
         
-        if ($this->getUser()) {
-            $isEnrolled = $enrollmentRepository->isEnrolled($this->getUser(), $course);
+        // 1. Check Enrollment
+        if ($user) {
+            $isEnrolled = $enrollmentRepository->isEnrolled($user, $course);
+        }
+
+        // 2. Handle Review Form
+        $review = new Review();
+        $reviewForm = null;
+
+        // Only allow reviewing if enrolled
+        if ($isEnrolled) {
+            $review->setCourse($course);
+            $review->setStudent($user);
+            
+            $form = $this->createForm(ReviewType::class, $review);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $review->setIsApproved(true); // Auto-approve for now
+                $entityManager->persist($review);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Thank you for your review!');
+                return $this->redirectToRoute('app_course_show', ['id' => $course->getId()]);
+            }
+            $reviewForm = $form->createView();
         }
 
         return $this->render('course/show.html.twig', [
             'course' => $course,
             'is_enrolled' => $isEnrolled,
+            'review_form' => $reviewForm, // Pass the form to the view
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // --- SECURITY CHECK: Only the owner can edit ---
+        // Security Check
         if ($course->getTeacher() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You can only edit your own courses.');
         }
-        // -----------------------------------------------
 
         $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
@@ -96,11 +124,10 @@ final class CourseController extends AbstractController
     #[Route('/{id}', name: 'app_course_delete', methods: ['POST'])]
     public function delete(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // --- SECURITY CHECK: Only the owner can delete ---
+        // Security Check
         if ($course->getTeacher() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You can only delete your own courses.');
         }
-        // -------------------------------------------------
 
         if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($course);

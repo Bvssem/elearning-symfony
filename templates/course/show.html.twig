@@ -19,12 +19,11 @@
                     {% endif %}
                 </div>
 
-                {# --- NEW SECTION: Lessons Management --- #}
+                {# --- SECTION: Lessons Management --- #}
                 <hr>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="card-title m-0">Course Content</h4>
-                    {# Only show 'Add Lesson' if user is logged in (Teacher logic) #}
-                    {% if app.user %} 
+                    {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %} 
                         <a href="{{ path('app_lesson_new', {course_id: course.id}) }}" class="btn btn-primary btn-sm">
                             + Add New Lesson
                         </a>
@@ -42,13 +41,10 @@
                                     {{ lesson.title }}
                                 </span>
                                 <div>
-                                    {# Watch Button #}
                                     <a href="{{ path('app_lesson_show', {id: lesson.id}) }}" class="btn btn-sm btn-outline-secondary">
                                         Watch
                                     </a>
-                                    
-                                    {# Edit Button (For Teachers) #}
-                                    {% if app.user %}
+                                    {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %}
                                         <a href="{{ path('app_lesson_edit', {id: lesson.id}) }}" class="btn btn-sm btn-ghost-warning ms-1">
                                             Edit
                                         </a>
@@ -58,7 +54,105 @@
                         {% endfor %}
                     </div>
                 {% endif %}
-                {# --------------------------------------- #}
+
+                {# --- SECTION: Resources (NEW) --- #}
+                <hr class="my-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="card-title m-0">Downloadable Resources</h3>
+                    {# Only Teacher can upload #}
+                    {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_resource_new', {id: course.id}) }}" class="btn btn-sm btn-outline-primary">
+                            + Upload File
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if course.resources is empty %}
+                    <p class="text-muted">No resources available for this course.</p>
+                {% else %}
+                    <div class="list-group list-group-flush mb-4">
+                        {% for resource in course.resources %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted me-2">📄</span>
+                                    {# Download Link #}
+                                    <a href="{{ asset('uploads/resources/' ~ resource.filenameOrUrl) }}" target="_blank" class="text-decoration-none">
+                                        {{ resource.title }}
+                                    </a>
+                                    {% if resource.isFree %}
+                                        <span class="badge bg-green-lt ms-2">Free Preview</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    {# Download Button Logic #}
+                                    {% if resource.isFree or is_enrolled or app.user == course.teacher %}
+                                        <a href="{{ asset('uploads/resources/' ~ resource.filenameOrUrl) }}" download class="btn btn-sm btn-ghost-secondary">
+                                            Download
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted small">Enroll to access</span>
+                                    {% endif %}
+
+                                    {# Delete Button (Teacher Only) #}
+                                    {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %}
+                                        <form method="post" action="{{ path('app_resource_delete', {'id': resource.id}) }}" class="d-inline ms-2" onsubmit="return confirm('Delete this file?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ resource.id) }}">
+                                            <button class="btn btn-sm btn-ghost-danger text-danger p-0 border-0">×</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# --- SECTION: Reviews --- #}
+                <hr class="my-4">
+                <h3 class="mb-3">Student Reviews</h3>
+                
+                <div class="row row-cards mb-4">
+                    {% for review in course.reviews %}
+                        <div class="col-md-12">
+                            <div class="card mb-2">
+                                <div class="card-body py-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <span class="fw-bold">{{ review.student.fullName ?? review.student.email }}</span>
+                                            <small class="text-muted ms-2">{{ review.createdAt|date('M d, Y') }}</small>
+                                        </div>
+                                        <div class="text-warning">
+                                            {% for i in 1..5 %}
+                                                {% if i <= review.rating %}★{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 mb-0">{{ review.comment }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No reviews yet. Be the first to review!</p>
+                    {% endfor %}
+                </div>
+
+                {% if is_enrolled and review_form is defined and review_form %}
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h4 class="card-title">Leave a Review</h4>
+                            {{ form_start(review_form) }}
+                                <div class="mb-3">
+                                    {{ form_row(review_form.rating) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_row(review_form.comment) }}
+                                </div>
+                                {{ form_row(review_form.submit) }}
+                            {{ form_end(review_form) }}
+                        </div>
+                    </div>
+                {% endif %}
+                {# ------------------------ #}
 
             </div>
             
