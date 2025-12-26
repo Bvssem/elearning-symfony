@@ -12,22 +12,44 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/student', name: 'app_student_')]
 class StudentController extends AbstractController
 {
-    // --- NEW: Redirect /student to /student/dashboard ---
+    // Redirect /student to /student/dashboard
     #[Route('/', name: 'index')]
     public function index(): Response
     {
         return $this->redirectToRoute('app_student_dashboard');
     }
-    // ----------------------------------------------------
 
     #[Route('/dashboard', name: 'dashboard')]
     public function dashboard(EnrollmentRepository $enrollmentRepository): Response
     {
-        // Get all enrollments for the current logged-in user
-        $enrollments = $enrollmentRepository->findBy(['student' => $this->getUser()]);
+        $user = $this->getUser();
+        $enrollments = $enrollmentRepository->findBy(['student' => $user]);
+
+        // Calculate progress for each enrollment
+        $enrollmentData = [];
+        
+        foreach ($enrollments as $enrollment) {
+            $course = $enrollment->getCourse();
+            $lessons = $course->getLessons();
+            $totalLessons = count($lessons);
+            
+            $completedCount = 0;
+            foreach ($lessons as $lesson) {
+                if ($user->getCompletedLessons()->contains($lesson)) {
+                    $completedCount++;
+                }
+            }
+
+            $percentage = $totalLessons > 0 ? round(($completedCount / $totalLessons) * 100) : 0;
+
+            $enrollmentData[] = [
+                'enrollment' => $enrollment,
+                'progress' => $percentage
+            ];
+        }
 
         return $this->render('student/dashboard.html.twig', [
-            'enrollments' => $enrollments,
+            'enrollmentData' => $enrollmentData, // Pass the new structured data
         ]);
     }
 }

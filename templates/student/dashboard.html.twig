@@ -12,7 +12,7 @@
     <div class="page-body">
         <div class="container-xl">
             {# Check if the student has enrollments #}
-            {% if enrollments is empty %}
+            {% if enrollmentData is empty %}
                 <div class="empty">
                     <p class="empty-title">You haven't enrolled in any courses yet.</p>
                     <div class="empty-action">
@@ -21,31 +21,45 @@
                 </div>
             {% else %}
                 <div class="row row-cards">
-                    {% for enrollment in enrollments %}
+                    {% for item in enrollmentData %}
+                        {% set enrollment = item.enrollment %}
+                        {% set progress = item.progress %}
+                        
                         <div class="col-md-6 col-lg-4">
                             <div class="card">
                                 <div class="card-body">
-                                    <h3 class="card-title">{{ enrollment.course.title }}</h3>
-                                    <p class="text-muted">
-                                        Enrolled on: {{ enrollment.enrolledAt|date('M d, Y') }}
-                                    </p>
+                                    <h3 class="card-title mb-1">{{ enrollment.course.title }}</h3>
+                                    <div class="text-muted mb-3">
+                                        Enrolled: {{ enrollment.enrolledAt|date('M d, Y') }}
+                                    </div>
 
-                                    {# --- NEW LOGIC: Link to the First Lesson --- #}
+                                    {# Progress Bar #}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Progress</span>
+                                            <span class="text-muted">{{ progress }}%</span>
+                                        </div>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar bg-primary" style="width: {{ progress }}%" role="progressbar"></div>
+                                        </div>
+                                    </div>
+
+                                    {# Buttons #}
                                     {% set firstLesson = enrollment.course.lessons|first %}
                                     
                                     {% if firstLesson %}
-                                        {# If the course has lessons, go to the player #}
                                         <a href="{{ path('app_lesson_show', {id: firstLesson.id}) }}" class="btn btn-success w-100">
-                                            Start Lesson 1
+                                            {% if progress > 0 %}
+                                                Continue Learning
+                                            {% else %}
+                                                Start Lesson 1
+                                            {% endif %}
                                         </a>
                                     {% else %}
-                                        {# If no lessons yet, just go to details #}
                                         <a href="{{ path('app_course_show', {id: enrollment.course.id}) }}" class="btn btn-outline-primary w-100">
                                             View Details
                                         </a>
                                     {% endif %}
-                                    {# ------------------------------------------ #}
-
                                 </div>
                             </div>
                         </div>
