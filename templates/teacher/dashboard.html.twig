@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block body %}
+<div class="page-wrapper">
+    <div class="container-xl">
+        
+        {# --- HEADER --- #}
+        <div class="page-header d-print-none mb-4">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2 class="page-title">Instructor Dashboard</h2>
+                    <div class="text-muted mt-1">Manage your courses and students</div>
+                </div>
+                <div class="col-auto ms-auto">
+                    <a href="{{ path('app_course_new') }}" class="btn btn-primary">
+                        + Create New Course
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# --- STATS CARDS --- #}
+        <div class="row row-cards mb-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-primary text-white avatar">📚</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{ courseData|length }} Courses</div>
+                                <div class="text-muted">Created by you</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">Tp</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{ totalRevenue }} DT</div>
+                                <div class="text-muted">Total Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-yellow text-white avatar">👥</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{ totalStudents }} Students</div>
+                                <div class="text-muted">Total Enrollments</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- COURSE TABLE --- #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">My Courses Performance</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>Course Title</th>
+                            <th>Price</th>
+                            <th>Students</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in courseData %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_course_show', {id: item.course.id}) }}" class="text-reset font-weight-bold">
+                                        {{ item.course.title }}
+                                    </a>
+                                </td>
+                                <td>{{ item.course.price }} DT</td>
+                                <td>
+                                    <span class="badge bg-blue-lt">{{ item.studentCount }}</span>
+                                </td>
+                                <td class="text-success font-weight-bold">{{ item.revenue }} DT</td>
+                                <td>
+                                    {% if item.course.isPublished %}
+                                        <span class="status status-green">Published</span>
+                                    {% else %}
+                                        <span class="status status-warning">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_course_edit', {id: item.course.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <p class="text-muted">You haven't created any courses yet.</p>
+                                    <a href="{{ path('app_course_new') }}" class="btn btn-primary btn-sm">Create First Course</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
