@@ -1,18 +1,20 @@
 {{ form_start(form) }}
     <div class="mb-3">
         {{ form_label(form.title, 'Course Title', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'e.g., Master Symfony 6'}}) }}
         {{ form_errors(form.title) }}
     </div>
 
+    {# REMOVED SLUG FIELD HERE #}
+
     <div class="mb-3">
-        {{ form_label(form.slug, 'Slug', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.slug, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.slug) }}
+        {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.category) }}
     </div>
 
     <div class="mb-3">
-        {{ form_label(form.shortDescription, 'Short Description', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_label(form.shortDescription, 'Short Summary', {'label_attr': {'class': 'form-label'}}) }}
         {{ form_widget(form.shortDescription, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
         {{ form_errors(form.shortDescription) }}
     </div>
@@ -24,35 +26,27 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.price, 'Price', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.price) }}
-            </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.price, 'Price (TND)', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.price) }}
         </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.isPublished, 'Published', {'label_attr': {'class': 'form-check-label'}}) }}
-                {{ form_widget(form.isPublished, {'attr': {'class': 'form-check-input'}}) }}
-                {{ form_errors(form.isPublished) }}
-            </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.imageFilename, 'Image URL', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.imageFilename, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.imageFilename) }}
         </div>
     </div>
 
     <div class="mb-3">
-        {{ form_label(form.imageFilename, 'Image Filename', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.imageFilename, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.imageFilename) }}
+        <label class="form-check form-switch">
+            {{ form_widget(form.isPublished, {'attr': {'class': 'form-check-input'}}) }}
+            <span class="form-check-label">Publish immediately?</span>
+        </label>
+        {{ form_errors(form.isPublished) }}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.category) }}
+    <div class="mt-4">
+        <button class="btn btn-primary w-100">{{ button_label|default('Save Course') }}</button>
     </div>
-
-    <button class="btn btn-primary" type="submit">{{ button_label|default('Save') }}</button>
-    <a href="{{ path('app_course_index') }}" class="btn btn-secondary">Cancel</a>
-
 {{ form_end(form) }}

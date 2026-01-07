@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Course;
-use App\Entity\Review;           // <--- ADDED
+use App\Entity\Review;
 use App\Form\CourseType;
-use App\Form\ReviewType;         // <--- ADDED
+use App\Form\ReviewType;
 use App\Repository\CourseRepository;
 use App\Repository\EnrollmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface; // <--- IMPORTANT
 
 #[Route('/course')]
 #[IsGranted('ROLE_USER')]
@@ -30,10 +31,13 @@ final class CourseController extends AbstractController
     }
 
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger // <--- Inject Slugger
+    ): Response
     {
         $course = new Course();
-        
         // Automatically set the logged-in user as the teacher
         $course->setTeacher($this->getUser());
 
@@ -41,6 +45,12 @@ final class CourseController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // --- AUTOMATICALLY GENERATE SLUG ---
+            // e.g. "My Course" -> "my-course-65a8f..."
+            $slug = $slugger->slug($course->getTitle())->lower();
+            $course->setSlug($slug . '-' . uniqid()); 
+            // -----------------------------------
+
             $entityManager->persist($course);
             $entityManager->flush();
 
@@ -53,12 +63,12 @@ final class CourseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_course_show', methods: ['GET', 'POST'])] // Changed to support POST for reviews
+    #[Route('/{id}', name: 'app_course_show', methods: ['GET', 'POST'])]
     public function show(
-        Request $request,               // <--- Added Request
+        Request $request,
         Course $course,
         EnrollmentRepository $enrollmentRepository,
-        EntityManagerInterface $entityManager // <--- Added EntityManager
+        EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
         $isEnrolled = false;
@@ -72,7 +82,6 @@ final class CourseController extends AbstractController
         $review = new Review();
         $reviewForm = null;
 
-        // Only allow reviewing if enrolled
         if ($isEnrolled) {
             $review->setCourse($course);
             $review->setStudent($user);
@@ -81,7 +90,7 @@ final class CourseController extends AbstractController
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $review->setIsApproved(true); // Auto-approve for now
+                $review->setIsApproved(true);
                 $entityManager->persist($review);
                 $entityManager->flush();
 
@@ -94,7 +103,7 @@ final class CourseController extends AbstractController
         return $this->render('course/show.html.twig', [
             'course' => $course,
             'is_enrolled' => $isEnrolled,
-            'review_form' => $reviewForm, // Pass the form to the view
+            'review_form' => $reviewForm,
         ]);
     }
 

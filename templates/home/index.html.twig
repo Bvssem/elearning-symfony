@@ -1,30 +1,134 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Home - E-Learning Platform{% endblock %}
+{% block title %}Welcome to E-Learning{% endblock %}
 
-{% block content %}
-    <div class="page-wrapper">
-        <div class="container-xl">
-            <div class="page-header d-print-none">
-                <div class="col">
-                    <h1 class="page-title">Welcome to E-Learning Platform</h1>
-                </div>
-            </div>
-        </div>
-        <div class="page-body">
-            <div class="container-xl">
-                <div class="row row-cards">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h2>Start Learning Today</h2>
-                                <p>Browse our courses and enroll to start your learning journey.</p>
-                                <a href="{{ path('app_course_index') }}" class="btn btn-primary">Browse Courses</a>
-                            </div>
-                        </div>
+{% block body %}
+<div class="page-wrapper">
+    
+    {# --- 1. HERO SECTION --- #}
+    <div class="container-xl">
+        <div class="page-header d-print-none text-center my-5">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 fw-bold mb-3">Master New Skills Today</h1>
+                    <p class="lead text-muted mb-4">
+                        Access high-quality courses taught by experts. 
+                        Learn at your own pace, anytime, anywhere.
+                    </p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{{ path('app_course_index') }}" class="btn btn-primary btn-lg">
+                            Browse All Courses
+                        </a>
+                        {% if not app.user %}
+                            <a href="{{ path('app_register') }}" class="btn btn-outline-secondary btn-lg">
+                                Join for Free
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            
+            {# --- 2. CATEGORIES SECTION --- #}
+            {% if categories is not empty %}
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h2 m-0">Explore Categories</h2>
+                </div>
+                <div class="row row-cards">
+                    {% for category in categories %}
+                        <div class="col-sm-6 col-lg-3">
+                            <a href="#" class="card card-link card-link-pop text-decoration-none">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        {# Simple icon placeholder based on name length #}
+                                        <span class="avatar avatar-lg rounded bg-blue-lt">
+                                            {{ category.name|slice(0,2)|upper }}
+                                        </span>
+                                    </div>
+                                    <h3 class="card-title text-dark">{{ category.name }}</h3>
+                                    <div class="text-muted">{{ category.courses|length }} Courses</div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# --- 3. LATEST COURSES SECTION --- #}
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h2 m-0">Latest Courses</h2>
+                    <a href="{{ path('app_course_index') }}" class="text-primary">View all &rarr;</a>
+                </div>
+                
+                <div class="row row-cards">
+                    {% for course in latestCourses %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100">
+                                {# Image Placeholder if you don't have real images yet #}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 140px;">
+                                    {% if course.imageFilename %}
+                                        <img src="{{ course.imageFilename }}" class="w-100 h-100 object-cover" alt="{{ course.title }}">
+                                    {% else %}
+                                        <span class="text-muted">📚 Course Image</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if course.category %}
+                                            <span class="badge bg-blue-lt">{{ course.category.name }}</span>
+                                        {% endif %}
+                                        <small class="text-muted ms-auto">{{ course.createdAt|date('M d, Y') }}</small>
+                                    </div>
+                                    
+                                    <h3 class="card-title mb-1">
+                                        <a href="{{ path('app_course_show', {id: course.id}) }}" class="text-dark text-decoration-none">
+                                            {{ course.title }}
+                                        </a>
+                                    </h3>
+                                    
+                                    <p class="text-secondary text-truncate mb-3" style="max-height: 3rem;">
+                                        {{ course.shortDescription|default('No description provided.') }}
+                                    </p>
+
+                                    <div class="d-flex align-items-center">
+                                        <span class="avatar avatar-xs rounded me-2" style="background-image: url(...)">
+                                            {{ course.teacher.fullName|default('T')|slice(0,1) }}
+                                        </span>
+                                        <div class="text-muted small">
+                                            By {{ course.teacher.fullName|default(course.teacher.email) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-success fs-3">{{ course.price }} DT</span>
+                                    <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn btn-primary btn-sm">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <div class="card p-5 text-center">
+                                <p class="text-muted">No courses available yet.</p>
+                                {% if is_granted('ROLE_USER') %}
+                                    <a href="{{ path('app_course_new') }}" class="btn btn-primary">Create the first Course!</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

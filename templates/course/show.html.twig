@@ -55,11 +55,10 @@
                     </div>
                 {% endif %}
 
-                {# --- SECTION: Resources (NEW) --- #}
+                {# --- SECTION: Resources --- #}
                 <hr class="my-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3 class="card-title m-0">Downloadable Resources</h3>
-                    {# Only Teacher can upload #}
                     {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %}
                         <a href="{{ path('app_resource_new', {id: course.id}) }}" class="btn btn-sm btn-outline-primary">
                             + Upload File
@@ -75,7 +74,6 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="text-muted me-2">📄</span>
-                                    {# Download Link #}
                                     <a href="{{ asset('uploads/resources/' ~ resource.filenameOrUrl) }}" target="_blank" class="text-decoration-none">
                                         {{ resource.title }}
                                     </a>
@@ -85,7 +83,6 @@
                                 </div>
 
                                 <div class="d-flex align-items-center">
-                                    {# Download Button Logic #}
                                     {% if resource.isFree or is_enrolled or app.user == course.teacher %}
                                         <a href="{{ asset('uploads/resources/' ~ resource.filenameOrUrl) }}" download class="btn btn-sm btn-ghost-secondary">
                                             Download
@@ -94,7 +91,6 @@
                                         <span class="text-muted small">Enroll to access</span>
                                     {% endif %}
 
-                                    {# Delete Button (Teacher Only) #}
                                     {% if app.user == course.teacher or is_granted('ROLE_ADMIN') %}
                                         <form method="post" action="{{ path('app_resource_delete', {'id': resource.id}) }}" class="d-inline ms-2" onsubmit="return confirm('Delete this file?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ resource.id) }}">
@@ -152,24 +148,32 @@
                         </div>
                     </div>
                 {% endif %}
-                {# ------------------------ #}
 
             </div>
             
+            {# --- FOOTER: Payment / Enrollment --- #}
             <div class="card-footer d-flex align-items-center">
                 <a href="{{ path('app_course_index') }}" class="btn btn-secondary me-2">Back to list</a>
 
-                {# Enrollment Logic #}
                 {% if app.user %}
                      {% if is_enrolled is defined and is_enrolled %}
                         <button class="btn btn-success disabled">Already Enrolled</button>
                         <a href="{{ path('app_student_dashboard') }}" class="btn btn-outline-primary ms-2">Go to Dashboard</a>
                      {% else %}
-                        <form action="{{ path('app_enrollment_enroll', {'id': course.id}) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-success">
-                                Enroll Now
-                            </button>
-                        </form>
+                        {# Payment Logic #}
+                        {% if course.price > 0 %}
+                            <form action="{{ path('app_payment_checkout', {'id': course.id}) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-primary">
+                                    Buy for {{ course.price }} DT
+                                </button>
+                            </form>
+                        {% else %}
+                            <form action="{{ path('app_payment_checkout', {'id': course.id}) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-success">
+                                    Enroll for Free
+                                </button>
+                            </form>
+                        {% endif %}
                      {% endif %}
                 {% else %}
                     <a href="{{ path('app_login') }}" class="btn btn-primary">
