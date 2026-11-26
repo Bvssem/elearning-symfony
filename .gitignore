@@ -1,3 +1,14 @@
+# ============================================================
+# elearning-symfony — .gitignore
+# Symfony defaults + security hardening for secrets, DBs, artifacts.
+# ============================================================
+
+# --- Secrets & environment — .env must NEVER be committed ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
 
 ###> symfony/framework-bundle ###
 /.env.local
@@ -18,3 +29,23 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# --- Databases & binary artifacts ---
+*.db
+*.sqlite
+*.sqlite3
+*.bin
+
+# --- Python (if any Python tooling/scripts are used) ---
+__pycache__/
+*.py[cod]
+
+# --- Node (if any frontend build tooling is used) ---
+node_modules/
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
